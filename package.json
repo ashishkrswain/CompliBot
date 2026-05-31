@@ -1,0 +1,15 @@
+{
+  "name": "complibot",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": ["api", "portal"],
+  "scripts": {
+    "dev:api": "cd api && bun run --bun src/index.ts",
+    "dev:portal": "cd portal && npm run dev",
+    "build:api": "cd api && bun build src/index.ts --outdir dist",
+    "build:portal": "cd portal && npm run build",
+    "db:migrate": "cd api && bun run src/db/migrate.ts",
+    "db:seed": "cd api && bun run src/db/seed.ts",
+    "typecheck": "cd api && bunx tsc --noEmit && cd ../portal && npx tsc --noEmit"
+  }
+}

@@ -1,0 +1,11 @@
+FROM oven/bun:1.1-alpine AS base
+WORKDIR /app
+
+COPY api/package.json api/bun.lockb* ./
+RUN bun install --frozen-lockfile 2>/dev/null || bun install
+
+COPY api/src ./src
+COPY api/tsconfig.json ./tsconfig.json
+
+EXPOSE 3001
+CMD ["bun", "run", "--bun", "src/index.ts"]

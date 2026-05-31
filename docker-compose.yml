@@ -1,0 +1,59 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: complibot
+      POSTGRES_PASSWORD: complibot
+      POSTGRES_DB: complibot
+    ports:
+      - "5445:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U complibot"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6395:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    ports:
+      - "3105:3001"
+    environment:
+      DATABASE_URL: postgresql://complibot:complibot@postgres:5432/complibot
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: complibot-dev-secret-change-in-prod
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      API_PORT: "3001"
+      NODE_ENV: production
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  portal:
+    build:
+      context: .
+      dockerfile: Dockerfile.portal
+    ports:
+      - "3005:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:3105
+    depends_on:
+      - api
+
+volumes:
+  pgdata:
